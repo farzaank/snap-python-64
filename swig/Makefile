@@ -22,7 +22,7 @@
 #		make dist-win
 
 # set the path to your SNAP directory here
-GITDIR = ../../snap
+GITDIR = ../../snap-dev-64
 SNAPDIR = $(GITDIR)/$(SNAP)
 GLIBDIR = $(GITDIR)/$(GLIB)
 # SNAPADVDIR = $(GITDIR)/$(SNAPADV)
