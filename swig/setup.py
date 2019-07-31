@@ -13,6 +13,9 @@ import sys
 
 from distutils.core import setup, Extension
 
+#pip flag
+pip=True
+
 #
 #   Snap.py version
 #
@@ -47,6 +50,16 @@ if len(sys.argv) > 1  and  sys.argv[1] == "-n":
 sdist = False
 if len(sys.argv) > 1  and  sys.argv[1] == "sdist":
     sdist = True
+    
+# added OS specific wheeling
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+except ImportError:
+    bdist_wheel = None
 
 #
 #   determine package parameters:
@@ -96,6 +109,8 @@ if uname[0] == "Linux":
             swubuntu = True
     except:
         pass
+    useros="POSIX :: Linux"
+
 
     obj_name = "_snap.so"
 
@@ -108,6 +123,8 @@ elif uname[0] == "Darwin":
         os_version = "macosx" + content.strip()
     except:
         pass
+    useros="MacOS"
+
 
     obj_name = "_snap.so"
 
@@ -118,6 +135,7 @@ elif uname[0].find("CYGWIN") == 0:
 
 elif uname[0].find("Windows") == 0:
     os_version = "Win"
+    useros="Microsoft :: Windows"
     obj_name = "_snap.pyd"
 
 # architecture
@@ -142,6 +160,12 @@ sys_install = os.path.join(
 instdir = "site-packages"
 if swubuntu:
     instdir = "dist-packages"
+    
+#pip path relative to usr/local/ for mac and linux
+if uname[0]=="Darwin":
+    pip_install='lib/python'+'/'+instdir+'/'
+else:
+    pip_install='lib/python'+str(sys.version_info[0])+'.'+str(sys.version_info[1])+'/'+instdir+'/'
 
 # check for an alternative Python user directory
 user_install = sys_install
@@ -170,6 +194,10 @@ files = []
 if uname[0] == "Darwin"  and  sdist:
     files = ["install_name_tool", "update_dynlib.sh"]
 
+#switch to pip directory
+if pip:
+    user_install=pip_install
+    
 #
 #   update the dynamic library path
 #
@@ -189,5 +217,9 @@ setup (name = 'snap',
     version     = pkg_version,
     author      = "snap.stanford.edu",
     description = """SNAP (Stanford Network Analysis Platform) Python""",
+    cmdclass={'bdist_wheel': bdist_wheel},
+    classifiers=[
+        "Programming Language :: Python :: "+str(sys.version_info[0]),
+        "Operating System :: " + useros,
     )
 
