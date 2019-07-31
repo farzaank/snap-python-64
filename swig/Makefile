@@ -93,10 +93,18 @@ install: setup.py snap.py _snap.so
 dist: setup.py snap.py _snap.so
 	cp $(MANIFEST) MANIFEST
 	python setup.py sdist
+	
+bdist: setup.py snap.py _snap.so
+	cp $(MANIFEST) MANIFEST
+	python setup.py bdist_wheel
 
 dist3: setup.py snap3.py _snap3.so
 	cp $(MANIFEST) MANIFEST
 	python3 setup.py sdist
+	
+bdist3: setup.py snap3.py _snap3.so _snap.so snap.py
+	cp $(MANIFEST) MANIFEST
+	python3 setup.py bdist_wheel
 
 swig-win: snap_wrap.cxx
 
@@ -110,3 +118,9 @@ dist-win: setup.py snap.py _snap.pyd
 
 clean:
 	rm -f *.o *_wrap*.cxx _*.so *.pyc snap*.py _snap*.*
+
+pip: dist/*	
+	python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+pip3: dist/*	
+	python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
